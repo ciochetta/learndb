@@ -1,13 +1,7 @@
-const repl = require('repl');
+const repl = require("repl");
+const eval = require("./parser");
 
-
-myContext = {
-    SELECT: {
-        teste:"funcionou"
-    }
-}
-
-
-const myRelp = repl.start("Luis DB *** ")
-
-Object.assign(myRelp.context, myContext)
+repl.start({
+	prompt: "LuisDB $ ",
+	eval: eval,
+});
