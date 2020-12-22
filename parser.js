@@ -66,6 +66,8 @@ function eval(cmd, context, filename, callback) {
 	}
 
 	executeCommand(eachStatement);
+
+	callback(null, "Done.")
 }
 
 function parseCommand(cmd) {
