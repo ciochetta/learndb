@@ -1,6 +1,6 @@
 # learndb
 
-Resources: 
+Resources:
 
 https://www.stefanjudis.com/today-i-learned/how-to-create-your-own-node-js-repl/
 

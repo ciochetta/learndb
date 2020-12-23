@@ -1,76 +1,63 @@
-const commands = [
-	{
-		name: "SELECT",
-		params: ["table"],
-		execute(params, obj) {
-			let { table } = params;
-
-			if (table !== undefined) {
-				return console.log(database[table].data);
-			}
-
-			console.log(database);
-		},
-	},
-	{
-		name: "INSERT",
-		params: ["table"],
-		execute(params, obj) {
-			let { table } = params;
-
-			if (database[table] === undefined) {
-				return console.error(`ERROR: Table ${table} not found`);
-			}
-
-			let insertObj = {};
-
-			for (let i = 0; i < database[table].keys.length; i++) {
-				const key = database[table].keys[i];
-
-				if (obj[i] === undefined) {
-					return console.error(`ERROR: ${key} can not be empty`);
-				}
-
-				insertObj[key] = obj[i];
-			}
-
-			database[table].data.push(insertObj);
-		},
-	},
-	{
-		name: "CREATE",
-		params: ["table"],
-		execute(params, keys) {
-			let { table } = params;
-
-			if (keys === undefined || keys.length === 0) {
-				return console.error("ERROR: table columns can't be empty");
-			}
-
-			database[table] = {
-				keys: keys,
-				data: [],
-			};
-		},
-	},
-];
-
-let database = {};
+const { commands } = require("./commandExecutor");
 
 function eval(cmd, context, filename, callback) {
 	cmd = cmd.replace("\n", "");
-	let eachStatement = cmd.split(" ");
+
+	let eachStatement = parseStatements(cmd);
 
 	for (let i = 0; i < eachStatement.length; i++) {
-		eachStatement[i] = parseCommand(eachStatement[i]);
+		eachStatement[i] = stringToCommand(eachStatement[i]);
 	}
 
 	executeCommand(eachStatement);
 
-	callback(null, "Done.")
+	callback(null, "Done.");
 }
 
-function parseCommand(cmd) {
+function parseStatements(str) {
+	console.log(str);
+	let i = 0;
+
+	let statements = [];
+
+	let currentStatement = "";
+
+	let parsingString = false;
+
+	while (i <= str.length) {
+		let currChar = str[i];
+
+		if (
+			((currChar === " " && !parsingString) || i === str.length) &&
+			currentStatement !== ""
+		) {
+			statements.push(currentStatement);
+			currentStatement = "";
+		} else {
+			if (currChar === `"` && parsingString) {
+				parsingString = false;
+				statements.push(currentStatement);
+				currentStatement = "";
+				i++;
+				continue;
+			}
+
+			if (currChar === `"` && !parsingString) {
+				parsingString = true;
+				i++;
+				continue;
+			}
+
+			currentStatement = `${currentStatement}${currChar}`;
+		}
+
+		i++;
+	}
+
+	return statements;
+}
+
+function stringToCommand(cmd) {
 	const thisCommand = commands.find(
 		(cm) => cm.name.toLowerCase() === cmd.toLowerCase()
 	);
