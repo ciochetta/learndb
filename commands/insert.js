@@ -17,11 +17,11 @@ module.exports = {
 		for (let i = 0; i < database[table].keys.length; i++) {
 			const key = database[table].keys[i];
 
-			if (obj[i] === undefined) {
+			if (!key.nullable && (obj[i] === undefined || obj[i] === null)) {
 				return console.error(`ERROR: ${key} can not be empty`);
 			}
 
-			insertObj[key] = obj[i];
+			insertObj[key.name] = obj[i];
 		}
 
 		database[table].data.push(insertObj);

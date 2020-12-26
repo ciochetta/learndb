@@ -18,7 +18,6 @@ module.exports = {
 			const rawDatabase = fs.readFileSync(databasePath);
 
 			const databaseJSON = JSON.parse(rawDatabase);
-			console.log(databaseJSON);
 
 			loadDatabase(databaseJSON);
 		} else {

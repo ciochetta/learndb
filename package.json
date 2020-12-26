@@ -1,20 +1,24 @@
 {
-  "name": "learndb",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ciochetta/learndb.git"
-  },
-  "keywords": [],
-  "author": "Luis Felipe Ciochetta",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/ciochetta/learndb/issues"
-  },
-  "homepage": "https://github.com/ciochetta/learndb"
+	"name": "learndb",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"test": "jest",
+		"watch": "jest --watchAll"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/ciochetta/learndb.git"
+	},
+	"keywords": [],
+	"author": "Luis Felipe Ciochetta",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/ciochetta/learndb/issues"
+	},
+	"homepage": "https://github.com/ciochetta/learndb",
+	"devDependencies": {
+		"jest": "^26.6.3"
+	}
 }

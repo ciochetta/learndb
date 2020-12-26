@@ -1,21 +1,6 @@
 const { commands } = require("./commandExecutor");
 
-function eval(cmd, context, filename, callback) {
-	cmd = cmd.replace("\n", "");
-
-	let eachStatement = parseStatements(cmd);
-
-	for (let i = 0; i < eachStatement.length; i++) {
-		eachStatement[i] = stringToCommand(eachStatement[i]);
-	}
-
-	executeCommand(eachStatement);
-
-	callback(null, "Done.");
-}
-
 function parseStatements(str) {
-	console.log(str);
 	let i = 0;
 
 	let statements = [];
@@ -24,33 +9,97 @@ function parseStatements(str) {
 
 	let parsingString = false;
 
+	let objectParsingLayer = 0;
+
+	let arrayParsingLayer = 0;
+
 	while (i <= str.length) {
 		let currChar = str[i];
 
-		if (
-			((currChar === " " && !parsingString) || i === str.length) &&
-			currentStatement !== ""
-		) {
-			statements.push(currentStatement);
-			currentStatement = "";
-		} else {
-			if (currChar === `"` && parsingString) {
-				parsingString = false;
-				statements.push(currentStatement);
-				currentStatement = "";
-				i++;
-				continue;
-			}
-
-			if (currChar === `"` && !parsingString) {
-				parsingString = true;
-				i++;
-				continue;
-			}
-
+		if (currChar === "}") {
 			currentStatement = `${currentStatement}${currChar}`;
+			objectParsingLayer--;
+			if (objectParsingLayer === 0) {
+				statements.push(JSON.parse(currentStatement));
+				currentStatement = "";
+			}
+
+			i++;
+			continue;
 		}
 
+		if (currChar === "{") {
+			currentStatement = `${currentStatement}${currChar}`;
+			objectParsingLayer++;
+			i++;
+			continue;
+		}
+
+		if (objectParsingLayer > 0) {
+			currentStatement = `${currentStatement}${currChar}`;
+			i++;
+			continue;
+		}
+
+		if (currChar === "]") {
+			currentStatement = `${currentStatement}${currChar}`;
+			arrayParsingLayer--;
+			if (arrayParsingLayer === 0) {
+				statements.push(JSON.parse(currentStatement));
+				currentStatement = "";
+			}
+
+			i++;
+			continue;
+		}
+
+		if (currChar === "[") {
+			currentStatement = `${currentStatement}${currChar}`;
+			arrayParsingLayer++;
+			i++;
+			continue;
+		}
+
+		if (arrayParsingLayer > 0) {
+			currentStatement = `${currentStatement}${currChar}`;
+			i++;
+			continue;
+		}
+
+		if (parsingString && currChar === `"`) {
+			parsingString = false;
+			statements.push(currentStatement);
+			currentStatement = "";
+			i++;
+			continue;
+		}
+
+		if (currChar === `"` && !parsingString) {
+			parsingString = true;
+			i++;
+			continue;
+		}
+
+		if (currChar === " " && !parsingString && currentStatement != "") {
+			statements.push(currentStatement);
+			currentStatement = "";
+			i++;
+			continue;
+		}
+
+		if (currChar === " " && !parsingString) {
+			i++;
+			continue;
+		}
+
+		if (i === str.length && currentStatement !== "") {
+			statements.push(currentStatement);
+			currentStatement = "";
+			i++;
+			continue;
+		}
+
+		currentStatement = `${currentStatement}${currChar}`;
 		i++;
 	}
 
@@ -58,6 +107,10 @@ function parseStatements(str) {
 }
 
 function stringToCommand(cmd) {
+	if (typeof cmd === "object") {
+		return cmd;
+	}
+
 	const thisCommand = commands.find(
 		(cm) => cm.name.toLowerCase() === cmd.toLowerCase()
 	);
@@ -69,31 +122,7 @@ function stringToCommand(cmd) {
 	return thisCommand;
 }
 
-function executeCommand(statements) {
-	for (let i = 0; i < statements.length; i++) {
-		const statement = statements[i];
-
-		if (statement.name !== undefined) {
-			let params = {};
-
-			for (let j = 0; j < statement.params.length; j++) {
-				i++;
-				params[statement.params[j]] = statements[i];
-			}
-
-			let obj = [];
-
-			while (i < statements.length) {
-				i++;
-
-				if (statements[i] !== undefined) {
-					obj.push(statements[i]);
-				}
-			}
-
-			statement.execute(params, obj);
-		}
-	}
-}
-
-module.exports = eval;
+module.exports = {
+	parseStatements,
+	stringToCommand,
+};
