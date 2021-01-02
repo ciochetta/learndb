@@ -2,27 +2,24 @@ let { getDatabase, loadDatabase, saveDatabase } = require("../database");
 
 module.exports = {
 	name: "CREATE",
-	params: ["table"],
-	execute(params, keys) {
-		const { table } = params;
+	params: ["columns", "table"],
+	execute(params) {
+		let { columns, table } = params;
 		let database = getDatabase();
 
-		if (Array.isArray(keys[0])) {
-			console.log(keys);
-			keys = keys[0];
+		if (Array.isArray(columns[0])) {
+			columns = columns[0];
 		}
 
-		if (keys === undefined || keys.length === 0) {
-			return console.error("ERROR: table columns can't be empty.");
+		if (columns === undefined || columns.length === 0) {
+			return "ERROR: table columns can't be empty.";
 		}
 
 		if (table === "name") {
-			return console.error(
-				"ERROR: you can't create a table with name 'name', its a reserved word."
-			);
+			return "ERROR: you can't create a table with name 'name', its a reserved word.";
 		}
 
-		keys = keys.map((key) => {
+		columns = columns.map((key) => {
 			if (typeof key === "string") {
 				return {
 					name: key,
@@ -34,11 +31,13 @@ module.exports = {
 		});
 
 		database[table] = {
-			keys: keys,
+			keys: columns,
 			data: [],
 		};
 
 		loadDatabase(database);
 		saveDatabase(database);
+
+		return `Table ${table} created`;
 	},
 };

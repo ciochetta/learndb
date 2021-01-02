@@ -1,7 +1,11 @@
 const repl = require("repl");
-const eval = require("./evaluator");
+const { evalString, evalObject } = require("./evaluator");
 
-repl.start({
-	prompt: "LuisDB $ ",
-	eval: eval,
-});
+if (process.argv[2] === "repl") {
+	repl.start({
+		prompt: "LuisDB $ ",
+		eval: evalString,
+	});
+}
+
+module.exports = { evalObject };

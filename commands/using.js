@@ -5,14 +5,8 @@ const fs = require("fs");
 module.exports = {
 	name: "USING",
 	params: ["databaseName"],
-	execute(params, keys) {
-		const { databaseName } = params;
-
-		if (databaseName === undefined) {
-			return console.error("ERROR: database name can't be empty");
-		}
-
-		const databasePath = `./${databaseName}.ldb`;
+	execute(params) {
+		const databasePath = `./${params}.ldb`;
 
 		if (fs.existsSync(databasePath)) {
 			const rawDatabase = fs.readFileSync(databasePath);
@@ -20,10 +14,13 @@ module.exports = {
 			const databaseJSON = JSON.parse(rawDatabase);
 
 			loadDatabase(databaseJSON);
+
+			return `Database ${params} loaded.`;
 		} else {
-			let newDatabase = { name: databaseName };
+			let newDatabase = { name: params };
 			loadDatabase(newDatabase);
 			saveDatabase(newDatabase);
+			return `new database ${params} created.`;
 		}
 	},
 };

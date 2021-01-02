@@ -1,10 +1,11 @@
-let { getDatabase } = require("../database");
+const { getDatabase } = require("../database");
+const { buildWhere } = require("../whereBuilder");
 
 module.exports = {
 	name: "SELECT",
-	params: ["structure", "table"],
-	execute(params, obj) {
-		const { structure, table } = params;
+	params: ["columns", "table"],
+	execute(params) {
+		const { columns, table, where } = params;
 
 		if (table === undefined) {
 			return console.error("ERROR: table parameter can't be empty");
@@ -18,15 +19,25 @@ module.exports = {
 
 		keys = [];
 
-		if (Array.isArray(structure)) {
-			keys = structure;
+		if (Array.isArray(columns)) {
+			keys = columns;
 		} else {
-			if (structure !== "*") {
-				keys.push(structure);
+			if (columns !== "star") {
+				keys.push(columns);
 			}
 		}
 
 		tableData = database[table].data;
+
+		if (where !== undefined && Array.isArray(where)) {
+			where.forEach((whereObj) => {
+				const whereFunction = buildWhere(whereObj);
+
+				console.log(whereFunction);
+
+				tableData = tableData.filter(whereFunction);
+			});
+		}
 
 		if (keys.length === 0) {
 			return console.table(tableData);
