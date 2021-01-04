@@ -3,7 +3,6 @@ const { buildWhere } = require("../whereBuilder");
 
 module.exports = {
 	name: "SELECT",
-	params: ["columns", "table"],
 	execute(params) {
 		const { columns, table, where } = params;
 
@@ -53,7 +52,7 @@ module.exports = {
 				return row;
 			});
 
-			return console.table(result);
+			return result;
 		}
 	},
 };

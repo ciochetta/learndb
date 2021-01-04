@@ -2,7 +2,6 @@ let { getDatabase, loadDatabase, saveDatabase } = require("../database");
 
 module.exports = {
 	name: "INSERT",
-	params: ["document", "table"],
 	execute(params) {
 		const { document, table } = params;
 

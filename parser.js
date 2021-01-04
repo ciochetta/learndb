@@ -9,6 +9,10 @@ function parseStatements(str) {
 }
 
 function objStatementToCommand(statements) {
+	if (!Array.isArray(statements)) {
+		statements = [statements];
+	}
+
 	statements = statements.map((st) => {
 		return {
 			command: commands.find(

@@ -4,7 +4,6 @@ const fs = require("fs");
 
 module.exports = {
 	name: "USING",
-	params: ["databaseName"],
 	execute(params) {
 		const databasePath = `./${params}.ldb`;
 
