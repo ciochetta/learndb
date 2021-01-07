@@ -148,10 +148,10 @@ LuisDB.evalObject({
 
 These are the things I want to implement in this project, in order of importance
 
-- Support the UPDATE keyword
-- Support the DELETE keyword
-- Create a CLI for global use
+- write documentation for: UPDATE, DELETE, BULK INSERT, CREATE INDEX
+- move documentation to another file
 - Support indexing
+- Create a CLI for global use
 - Create an authentication system
 - Support partitioning
 - Support migration from SQL schemas

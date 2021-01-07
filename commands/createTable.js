@@ -1,7 +1,7 @@
 let { getDatabase, loadDatabase, saveDatabase } = require("../database");
 
 module.exports = {
-	name: "CREATE",
+	name: "CREATE TABLE",
 	execute(params) {
 		let { columns, table } = params;
 		let database = getDatabase();
