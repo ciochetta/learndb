@@ -1,4 +1,4 @@
-let { loadDatabase, saveDatabase } = require("../database");
+let { setDatabase, saveDatabase } = require("../database");
 
 const fs = require("fs");
 
@@ -12,12 +12,12 @@ module.exports = {
 
 			const databaseJSON = JSON.parse(rawDatabase);
 
-			loadDatabase(databaseJSON);
+			setDatabase(databaseJSON);
 
 			return `Database ${params} loaded.`;
 		} else {
-			let newDatabase = { name: params };
-			loadDatabase(newDatabase);
+			let newDatabase = { name: params, tables: [] };
+			setDatabase(newDatabase);
 			saveDatabase(newDatabase);
 			return `new database ${params} created.`;
 		}

@@ -1,8 +1,10 @@
+const { table } = require("console");
 const fs = require("fs");
 
 let database = {};
+let tables = {};
 
-const loadDatabase = function (_database) {
+const setDatabase = function (_database) {
 	database = _database;
 };
 
@@ -20,4 +22,50 @@ const saveDatabase = function (_database) {
 	fs.writeFileSync(databasePath, JSON.stringify(_database));
 };
 
-module.exports = { getDatabase, loadDatabase, saveDatabase };
+const setTable = function (tableName, tableData) {
+	tables[tableName] = tableData;
+};
+
+const getTable = function (tableName) {
+	if (tables[tableName] !== undefined) {
+		return tables[tableName];
+	}
+
+	const tablePath = `./${database.name}_${tableName}.ldbt`;
+
+	if (fs.existsSync(tablePath)) {
+		const rawTable = fs.readFileSync(tablePath);
+
+		const tableJson = JSON.parse(rawTable);
+
+		setTable(tableName, tableJson);
+
+		return tableJson;
+	} else {
+		return {
+			err: `ERROR: could not find a table with name ${tableName}`,
+		};
+	}
+};
+
+const saveTable = function (tableName, tableData) {
+	const tablePath = `./${database.name}_${tableName}.ldbt`;
+
+	fs.writeFileSync(tablePath, JSON.stringify(tableData));
+};
+
+const getTableMetadata = function (tableName) {
+	return database.tables.find(
+		(table) => table.name.toLowerCase() === tableName.toLowerCase()
+	);
+};
+
+module.exports = {
+	getDatabase,
+	setDatabase,
+	saveDatabase,
+	saveTable,
+	getTable,
+	setTable,
+	getTableMetadata,
+};

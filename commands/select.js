@@ -1,4 +1,4 @@
-const { getDatabase } = require("../database");
+const { getTable } = require("../database");
 const { buildWhere } = require("../whereBuilder");
 
 module.exports = {
@@ -7,13 +7,13 @@ module.exports = {
 		const { columns, table, where } = params;
 
 		if (table === undefined) {
-			return console.error("ERROR: table parameter can't be empty");
+			return "ERROR: table parameter can't be empty";
 		}
 
-		let database = getDatabase();
+		const tableRows = getTable(table);
 
-		if (database[table] === undefined) {
-			return console.error(`ERROR: could not find table ${table}`);
+		if (tableRows.err) {
+			return tableRows.err;
 		}
 
 		keys = [];
@@ -26,33 +26,31 @@ module.exports = {
 			}
 		}
 
-		tableData = database[table].data;
+		if (keys.length === 0) {
+			return tableRows;
+		}
+
+		let whereFiltered = [...tableRows];
 
 		if (where !== undefined && Array.isArray(where)) {
 			where.forEach((whereObj) => {
 				const whereFunction = buildWhere(whereObj);
 
-				console.log(whereFunction);
-
-				tableData = tableData.filter(whereFunction);
+				whereFiltered = whereFiltered.filter(whereFunction);
 			});
 		}
 
-		if (keys.length === 0) {
-			return console.table(tableData);
-		} else {
-			const result = tableData.map((data) => {
-				row = {};
+		const result = whereFiltered.map((data) => {
+			row = {};
 
-				for (let i = 0; i < keys.length; i++) {
-					const key = keys[i];
-					row[key] = data[key];
-				}
+			for (let i = 0; i < keys.length; i++) {
+				const key = keys[i];
+				row[key] = data[key];
+			}
 
-				return row;
-			});
+			return row;
+		});
 
-			return result;
-		}
+		return result;
 	},
 };

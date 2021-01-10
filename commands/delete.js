@@ -1,4 +1,4 @@
-const { getDatabase, loadDatabase, saveDatabase } = require("../database");
+const { getTable, saveTable, setTable } = require("../database");
 const { buildWhere } = require("../whereBuilder");
 
 module.exports = {
@@ -10,31 +10,27 @@ module.exports = {
 			return console.error("ERROR: table parameter can't be empty");
 		}
 
-		let database = getDatabase();
+		let tableRows = getTable(table);
 
-		if (database[table] === undefined) {
-			return console.error(`ERROR: could not find table ${table}`);
+		if (tableRows.err) {
+			return tableRows.err;
 		}
 
-		tableData = database[table].data;
-
-		let lengthBefore = database[table].data.length.toString();
+		let lengthBefore = tableRows.length.toString();
 
 		if (where !== undefined && Array.isArray(where)) {
 			where.forEach((whereObj) => {
 				const whereFunction = buildWhere(whereObj);
 
-				tableData = tableData.filter((e) => !whereFunction(e));
+				tableRows = tableRows.filter((e) => !whereFunction(e));
 			});
 		}
 
-		database[table].data = tableData;
-
-		loadDatabase(database);
-		saveDatabase(database);
+		setTable(table, tableRows);
+		saveTable(table, tableRows);
 
 		return `Successfully deleted ${
-			Number(lengthBefore) - tableData.length
+			Number(lengthBefore) - tableRows.length
 		} elements`;
 	},
 };

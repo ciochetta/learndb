@@ -1,4 +1,10 @@
-let { getDatabase, loadDatabase, saveDatabase } = require("../database");
+let {
+	getDatabase,
+	setDatabase,
+	saveDatabase,
+	saveTable,
+	setTable,
+} = require("../database");
 
 module.exports = {
 	name: "CREATE TABLE",
@@ -29,12 +35,18 @@ module.exports = {
 			return key;
 		});
 
-		database[table] = {
-			keys: columns,
-			data: [],
-		};
+		database.tables = [
+			...database.tables,
+			{
+				name: table,
+				keys: columns,
+				indexes: [],
+			},
+		];
 
-		loadDatabase(database);
+		setTable(table, []);
+		saveTable(table, []);
+		setDatabase(database);
 		saveDatabase(database);
 
 		return `Table ${table} created`;
