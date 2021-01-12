@@ -1,4 +1,3 @@
-const { table } = require("console");
 const fs = require("fs");
 
 let database = {};
@@ -10,6 +9,10 @@ const setDatabase = function (_database) {
 
 const getDatabase = function () {
 	return database;
+};
+
+const getDatabaseName = function () {
+	return database.name;
 };
 
 const saveDatabase = function (_database) {
@@ -60,12 +63,25 @@ const getTableMetadata = function (tableName) {
 	);
 };
 
+const setTableMetadata = function (tableName, tableMetadata) {
+	database.tables = database.tables.filter(
+		(table) => table.name.toLowerCase() !== tableName.toLowerCase()
+	);
+
+	database.tables = [...database.tables, tableMetadata];
+
+	setDatabase(database);
+	saveDatabase(database);
+};
+
 module.exports = {
 	getDatabase,
 	setDatabase,
 	saveDatabase,
+	getDatabaseName,
 	saveTable,
 	getTable,
 	setTable,
 	getTableMetadata,
+	setTableMetadata,
 };

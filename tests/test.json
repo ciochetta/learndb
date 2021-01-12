@@ -1,0 +1,1 @@
+{"name":"test","tables":[{"name":"students","keys":[{"name":"id","nullable":false},{"name":"name","nullable":false},{"name":"grade","nullable":false}],"indexes":[]},{"name":"students","keys":[{"name":"id","nullable":false},{"name":"name","nullable":false},{"name":"grade","nullable":false}],"indexes":[]}]}

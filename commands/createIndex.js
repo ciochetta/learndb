@@ -1,31 +1,27 @@
-let { getDatabase, setDatabase, saveDatabase } = require("../database");
+//let { getDatabase, setDatabase, saveDatabase } = require("../database");
+let { createIndex } = require("../indexing");
 
 module.exports = {
 	name: "CREATE INDEX",
 	execute(params) {
-		let { columns, table, name } = params;
-		let database = getDatabase();
-
-		if (Array.isArray(columns[0])) {
-			columns = columns[0];
-		}
-
-		if (columns === undefined || columns.length === 0) {
+		if (params.columns === undefined || params.columns.length === 0) {
 			return "ERROR: columns can't be empty.";
 		}
 
-		if (table === undefined) {
+		if (params.table === undefined) {
 			return "ERROR: table can't be empty.";
 		}
 
-		database[table] = {
-			keys: columns,
-			data: [],
-		};
+		if (params.name === undefined) {
+			return "ERROR: name can't be empty";
+		}
 
-		setDatabase(database);
-		saveDatabase(database);
+		let result = createIndex(params);
 
-		return `Table ${table} created`;
+		if (result.err) {
+			return result.err;
+		}
+
+		return `Index ${params.name} created sucessfully`;
 	},
 };

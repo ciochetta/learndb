@@ -5,6 +5,7 @@ const using = require("./commands/using");
 const deleteCommand = require("./commands/delete");
 const update = require("./commands/update");
 const bulkInsert = require("./commands/bulkInsert");
+const createIndex = require("./commands/createIndex");
 
 const commands = [
 	select,
@@ -14,6 +15,7 @@ const commands = [
 	deleteCommand,
 	update,
 	bulkInsert,
+	createIndex,
 ];
 
 module.exports = { commands };
