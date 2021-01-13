@@ -1,23 +1,31 @@
-let { getDatabase, loadDatabase, saveDatabase } = require("../database");
+let {
+	getTable,
+	getTableMetadata,
+	setTable,
+	saveTable,
+} = require("../database");
 
 module.exports = {
 	name: "BULK INSERT",
 	execute(params) {
 		const { documents, table } = params;
 
-		let database = getDatabase();
+		let tableMetadata = getTableMetadata(table);
 
-		if (database[table] === undefined) {
-			return `ERROR: Table ${table} not found`;
+		let tableRows = getTable(table);
+
+		if (tableRows.err) {
+			return tableRows.err;
 		}
 
 		insertDocuments = [];
+		const keys = tableMetadata.keys;
 
 		documents.forEach((document) => {
 			let insertObj = {};
 
-			for (let i = 0; i < database[table].keys.length; i++) {
-				const key = database[table].keys[i];
+			for (let i = 0; i < keys.length; i++) {
+				const key = keys[i];
 
 				if (
 					!key.nullable &&
@@ -33,10 +41,10 @@ module.exports = {
 			insertDocuments.push(insertObj);
 		});
 
-		database[table].data = [...database[table].data, ...insertDocuments];
+		tableRows = [...tableRows, ...insertDocuments];
 
-		loadDatabase(database);
-		saveDatabase(database);
+		setTable(table, tableRows);
+		saveTable(table, tableRows);
 
 		return "Objects inserted with success";
 	},

@@ -1,20 +1,33 @@
-let { getDatabase, loadDatabase, saveDatabase } = require("../database");
+let {
+	getTable,
+	getTableMetadata,
+	setTable,
+	saveTable,
+} = require("../database");
 
 module.exports = {
 	name: "INSERT",
 	execute(params) {
 		const { document, table } = params;
 
-		let database = getDatabase();
+		let tableMetadata = getTableMetadata(table);
 
-		if (database[table] === undefined) {
-			return `ERROR: Table ${table} not found`;
+		if (tableMetadata === undefined) {
+			return `ERROR: could not find table with name ${table}`;
+		}
+
+		let tableRows = getTable(table);
+
+		if (tableRows.err) {
+			return tableRows.err;
 		}
 
 		let insertObj = {};
 
-		for (let i = 0; i < database[table].keys.length; i++) {
-			const key = database[table].keys[i];
+		let keys = tableMetadata.keys;
+
+		for (let i = 0; i < keys.length; i++) {
+			const key = keys[i];
 
 			if (
 				!key.nullable &&
@@ -27,10 +40,10 @@ module.exports = {
 			insertObj[key.name] = document[i] || document[key.name];
 		}
 
-		database[table].data.push(insertObj);
+		tableRows = [...tableRows, insertObj];
 
-		loadDatabase(database);
-		saveDatabase(database);
+		setTable(table, tableRows);
+		saveTable(table, tableRows);
 
 		return "Object inserted with success";
 	},

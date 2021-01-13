@@ -4,9 +4,15 @@ const { executeCommand } = require("./executor");
 function evalString(cmd, context, filename, callback) {
 	cmd = cmd.replace("\n", "");
 
+	if (cmd == "") {
+		return callback(null, undefined);
+	}
+
 	let eachStatement = parser.parseStatements(cmd);
 
+	console.time("command time");
 	const commandResult = executeCommand(eachStatement);
+	console.timeEnd("command time");
 
 	console.log(commandResult);
 

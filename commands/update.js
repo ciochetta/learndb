@@ -1,4 +1,4 @@
-const { getDatabase, loadDatabase, saveDatabase } = require("../database");
+const { getTable, setTable, saveTable } = require("../database");
 const { buildWhere } = require("../whereBuilder");
 
 module.exports = {
@@ -10,13 +10,11 @@ module.exports = {
 			return "ERROR: table parameter can't be empty";
 		}
 
-		let database = getDatabase();
+		let tableRows = getTable(table);
 
-		if (database[table] === undefined) {
-			return `ERROR: could not find table ${table}`;
+		if (tableRows.err) {
+			return tableRows.err;
 		}
-
-		tableData = database[table].data;
 
 		if (where === undefined) {
 			return `ERROR: the where parameter is not optional`;
@@ -30,7 +28,7 @@ module.exports = {
 
 		let updated = 0;
 
-		tableData = tableData.map((dbObj) => {
+		tableRows = tableRows.map((dbObj) => {
 			for (let index = 0; index < whereFunctions.length; index++) {
 				const whereFunction = whereFunctions[index];
 
@@ -48,10 +46,8 @@ module.exports = {
 			return dbObj;
 		});
 
-		database[table].data = tableData;
-
-		loadDatabase(database);
-		saveDatabase(database);
+		setTable(table, tableRows);
+		saveTable(table, tableRows);
 
 		return `Successfully updated ${updated} elements`;
 	},
