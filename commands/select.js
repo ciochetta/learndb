@@ -1,5 +1,6 @@
 const { getTable, getTableMetadata } = require("../database");
-const { buildWhere } = require("../whereBuilder");
+const { getIndex } = require("../indexing");
+const { buildWhere, buildIndexComparingFunction } = require("../whereBuilder");
 
 const fullTableSearch = function (table, keys, where) {
 	const tableRows = getTable(table);
@@ -8,7 +9,7 @@ const fullTableSearch = function (table, keys, where) {
 		return tableRows.err;
 	}
 
-	if (keys.length === 0) {
+	if (keys.length === 0 && where.length === 0) {
 		return tableRows;
 	}
 
@@ -20,6 +21,10 @@ const fullTableSearch = function (table, keys, where) {
 
 			whereFiltered = whereFiltered.filter(whereFunction);
 		});
+	}
+
+	if (keys.length === 0) {
+		return whereFiltered;
 	}
 
 	const result = whereFiltered.map((data) => {
@@ -49,16 +54,16 @@ const buildKeysArray = function (columns) {
 };
 
 const validateSelectParams = function (params) {
-	if (table === undefined) {
+	if (params.table === undefined) {
 		return { err: "ERROR: table parameter can't be empty" };
 	}
 
-	if (columns === undefined) {
+	if (params.columns === undefined) {
 		return { err: "ERROR: columns parameter can't be empty" };
 	}
 
-	if (where === undefined) {
-		where = [];
+	if (params.where === undefined) {
+		params.where = [];
 	}
 
 	return params;
@@ -112,12 +117,14 @@ const getAppropriateIndex = function (table, keys, where) {
 	return undefined;
 };
 
-const indexSearch = function (table, where, index) {
-	console.log(table);
-	console.log(where);
-	console.log(index);
+const indexSearch = function (table, where, index, keys) {
+	const indexBtree = getIndex(table, index.name);
 
-	return 0;
+	let comparingFunction = buildIndexComparingFunction(where[0]);
+
+	let values = indexBtree.search(comparingFunction);
+
+	return values;
 };
 
 module.exports = {
@@ -133,14 +140,14 @@ module.exports = {
 
 		let keys = buildKeysArray(columns);
 
-		if (keys.length === 0) {
+		if (keys.length === 0 || where.length > 1) {
 			return fullTableSearch(table, keys, where);
 		}
 
 		let index = getAppropriateIndex(table, keys, where);
 
 		if (index !== undefined) {
-			return indexSearch(table, where, index);
+			return indexSearch(table, where, index, keys);
 		}
 
 		return fullTableSearch(table, keys, where);

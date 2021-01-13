@@ -11,6 +11,7 @@ BTreeNode = function (value, add) {
 BTree = function (rootNode) {
 	return {
 		root: rootNode,
+
 		insert: function (newNode) {
 			this._insert(newNode, this.root);
 		},
@@ -49,6 +50,30 @@ BTree = function (rootNode) {
 			} else if (value > currentNode.value) {
 				return this._find(value, currentNode.right);
 			}
+		},
+		search: function (comparingFunction) {
+			return this._search(comparingFunction, this.root, []);
+		},
+		_search: function (comparingFunction, currentNode, result) {
+			if (currentNode.left !== null && currentNode.left !== undefined) {
+				result = [
+					...result,
+					...this._search(comparingFunction, currentNode.left, []),
+				];
+			}
+
+			if (comparingFunction(currentNode.value)) {
+				result = [...result, currentNode.value];
+			}
+
+			if (currentNode.right !== null && currentNode.left !== undefined) {
+				result = [
+					...result,
+					...this._search(comparingFunction, currentNode.right, []),
+				];
+			}
+
+			return result;
 		},
 		delete: function (value) {
 			let node = typeof value === "number" ? this.find(value) : value;

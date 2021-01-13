@@ -5,7 +5,7 @@ const {
 	setTableMetadata,
 } = require("./database");
 
-const { DatabaseFileToIndexBTree } = require("./btree");
+const { DatabaseFileToIndexBTree, IndexJsonToBTree } = require("./btree");
 
 const fs = require("fs");
 
@@ -23,9 +23,9 @@ const getIndex = function (tableName, indexName) {
 
 		const indexJson = JSON.parse(rawIndex);
 
-		indexes[`${tableName}_${indexName}`] = indexJson;
+		indexes[`${tableName}_${indexName}`] = IndexJsonToBTree(indexJson);
 
-		return indexJson;
+		return IndexJsonToBTree(indexJson);
 	} else {
 		return {
 			err: `ERROR: could not find an index with name ${indexName}`,
