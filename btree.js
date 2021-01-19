@@ -35,6 +35,12 @@ BTree = function (rootNode) {
 					newNode.parent = currentNode;
 					this.rebalance(currentNode.parent);
 				}
+			} else if (newNode.value == currentNode.value) {
+				if (currentNode.count === undefined) {
+					currentNode.count = 2;
+				} else {
+					currentNode.count++;
+				}
 			}
 		},
 		find: function (value) {
@@ -51,26 +57,55 @@ BTree = function (rootNode) {
 				return this._find(value, currentNode.right);
 			}
 		},
-		search: function (comparingFunction) {
-			return this._search(comparingFunction, this.root, []);
+		search: function (comparingFunction, blockingFunction) {
+			return this._search(comparingFunction, blockingFunction, this.root, []);
 		},
-		_search: function (comparingFunction, currentNode, result) {
+		_search: function (
+			comparingFunction,
+			blockingFunction,
+			currentNode,
+			result
+		) {
 			if (currentNode.left !== null && currentNode.left !== undefined) {
-				result = [
-					...result,
-					...this._search(comparingFunction, currentNode.left, []),
-				];
+				if (!blockingFunction(currentNode.value, currentNode.left.value)) {
+					result = [
+						...result,
+						...this._search(
+							comparingFunction,
+							blockingFunction,
+							currentNode.left,
+							[]
+						),
+					];
+				}
 			}
 
 			if (comparingFunction(currentNode.value)) {
-				result = [...result, currentNode.value];
+				if (currentNode.count === undefined) {
+					result = [...result, currentNode.value];
+				} else {
+					insertArray = [];
+
+					for (let i = 0; i < currentNode.count; i++) {
+						insertArray = [...insertArray, currentNode.value];
+					}
+
+					result = [...result, ...insertArray];
+				}
 			}
 
-			if (currentNode.right !== null && currentNode.left !== undefined) {
-				result = [
-					...result,
-					...this._search(comparingFunction, currentNode.right, []),
-				];
+			if (currentNode.right !== null && currentNode.right !== undefined) {
+				if (!blockingFunction(currentNode.value, currentNode.right.value)) {
+					result = [
+						...result,
+						...this._search(
+							comparingFunction,
+							blockingFunction,
+							currentNode.right,
+							[]
+						),
+					];
+				}
 			}
 
 			return result;
@@ -87,6 +122,16 @@ BTree = function (rootNode) {
 			this._delete(node);
 		},
 		_delete: function (node) {
+			if (node.count !== undefined) {
+				node.count -= 1;
+
+				if (node.count === 1) {
+					node.count = undefined;
+				}
+
+				return;
+			}
+
 			let parent = node.parent;
 
 			if (parent === null) {
@@ -295,6 +340,7 @@ BTree = function (rootNode) {
 		_toIndexJson: function (currentNode) {
 			return {
 				value: currentNode.value,
+				count: currentNode.count,
 				add: currentNode.add || null,
 				right:
 					currentNode.right !== null
@@ -321,6 +367,7 @@ const _IndexJsonToBTree = function (currentNodeJson, parent) {
 	let node = BTreeNode(currentNodeJson.value, currentNodeJson.add);
 
 	node.parent = parent;
+	node.count = currentNodeJson.count;
 
 	if (currentNodeJson.left !== null) {
 		node.left = _IndexJsonToBTree(currentNodeJson.left, node);

@@ -1,4 +1,4 @@
-const { buildWhere } = require("../whereBuilder");
+const { buildWhere } = require("../utils/whereBuilder");
 
 test("can where builder build a equal function", () => {
 	const testObj = {

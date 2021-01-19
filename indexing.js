@@ -38,19 +38,15 @@ const createIndex = function (indexOptions) {
 
 	let rows = getTable(table);
 
-	let btreeindex;
+	let btreeIndex;
 
 	if (columns.length > 1) {
-		btreeindex = DatabaseFileToIndexBTree(rows, columns[0], columns[1]);
+		btreeIndex = DatabaseFileToIndexBTree(rows, columns[0], columns[1]);
 	} else {
-		btreeindex = DatabaseFileToIndexBTree(rows, columns[0], null);
+		btreeIndex = DatabaseFileToIndexBTree(rows, columns[0], null);
 	}
 
-	serializedBtree = btreeindex.toIndexJson();
-
-	indexPath = `./${getDatabaseName()}_${table}_${name}.ldbi`;
-
-	fs.writeFileSync(indexPath, JSON.stringify(serializedBtree));
+	saveIndex(btreeIndex, table, name);
 
 	let tableMetadata = getTableMetadata(table);
 
@@ -64,4 +60,12 @@ const createIndex = function (indexOptions) {
 	return 0;
 };
 
-module.exports = { createIndex, getIndex };
+const saveIndex = function (btreeIndex, table, name) {
+	const serializedBtree = btreeIndex.toIndexJson();
+
+	const indexPath = `./${getDatabaseName()}_${table}_${name}.ldbi`;
+
+	fs.writeFileSync(indexPath, JSON.stringify(serializedBtree));
+};
+
+module.exports = { createIndex, getIndex, saveIndex };

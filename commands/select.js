@@ -1,6 +1,10 @@
 const { getTable, getTableMetadata } = require("../database");
 const { getIndex } = require("../indexing");
-const { buildWhere, buildIndexComparingFunction } = require("../whereBuilder");
+const { buildWhere } = require("../utils/whereBuilder");
+const {
+	buildIndexComparingFunction,
+	buildIndexBlockingFunction,
+} = require("../utils/indexingFunctionsBuilder");
 
 const fullTableSearch = function (table, keys, where) {
 	const tableRows = getTable(table);
@@ -121,8 +125,9 @@ const indexSearch = function (table, where, index, keys) {
 	const indexBtree = getIndex(table, index.name);
 
 	let comparingFunction = buildIndexComparingFunction(where[0]);
+	let blockingFunction = buildIndexBlockingFunction(where[0]);
 
-	let values = indexBtree.search(comparingFunction);
+	let values = indexBtree.search(comparingFunction, blockingFunction);
 
 	return values;
 };

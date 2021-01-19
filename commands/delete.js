@@ -1,5 +1,5 @@
 const { getTable, saveTable, setTable } = require("../database");
-const { buildWhere } = require("../whereBuilder");
+const { buildWhere } = require("../utils/whereBuilder");
 
 module.exports = {
 	name: "DELETE",
