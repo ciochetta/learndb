@@ -27,9 +27,7 @@ const getIndex = function (tableName, indexName) {
 
 		return IndexJsonToBTree(indexJson);
 	} else {
-		return {
-			err: `ERROR: could not find an index with name ${indexName}`,
-		};
+		throw `ERROR: could not find an index with name ${indexName}`;
 	}
 };
 
@@ -56,11 +54,17 @@ const createIndex = function (indexOptions) {
 	];
 
 	setTableMetadata(table, tableMetadata);
-
-	return 0;
 };
 
 const saveIndex = function (btreeIndex, table, name) {
+	if (table === undefined || table === null) {
+		throw "ERROR: table cannot be undefined";
+	}
+
+	if (name === undefined || name === null) {
+		throw "ERROR: index name cannot be undefined";
+	}
+
 	const serializedBtree = btreeIndex.toIndexJson();
 
 	const indexPath = `./${getDatabaseName()}_${table}_${name}.ldbi`;

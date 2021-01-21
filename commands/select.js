@@ -6,12 +6,34 @@ const {
 	buildIndexBlockingFunction,
 } = require("../utils/indexingFunctionsBuilder");
 
+const executeSelect = function (params) {
+	let { columns, table, where } = params;
+
+	try {
+		return select(columns, table, where || []);
+	} catch (error) {
+		return error;
+	}
+};
+
+const select = function (columns, table, where) {
+	let keys = buildKeysArray(columns);
+
+	if (keys.length === 0 || where.length > 1) {
+		return fullTableSearch(table, keys, where);
+	}
+
+	let index = getAppropriateIndex(table, keys, where);
+
+	if (index !== undefined && where.length === 1) {
+		return indexSearch(table, where, index);
+	}
+
+	return fullTableSearch(table, keys, where);
+};
+
 const fullTableSearch = function (table, keys, where) {
 	const tableRows = getTable(table);
-
-	if (tableRows.err) {
-		return tableRows.err;
-	}
 
 	if (keys.length === 0 && where.length === 0) {
 		return tableRows;
@@ -55,22 +77,6 @@ const buildKeysArray = function (columns) {
 	} else {
 		return [columns];
 	}
-};
-
-const validateSelectParams = function (params) {
-	if (params.table === undefined) {
-		return { err: "ERROR: table parameter can't be empty" };
-	}
-
-	if (params.columns === undefined) {
-		return { err: "ERROR: columns parameter can't be empty" };
-	}
-
-	if (params.where === undefined) {
-		params.where = [];
-	}
-
-	return params;
 };
 
 const getAppropriateIndex = function (table, keys, where) {
@@ -121,7 +127,7 @@ const getAppropriateIndex = function (table, keys, where) {
 	return undefined;
 };
 
-const indexSearch = function (table, where, index, keys) {
+const indexSearch = function (table, where, index) {
 	const indexBtree = getIndex(table, index.name);
 
 	let comparingFunction = buildIndexComparingFunction(where[0]);
@@ -134,27 +140,5 @@ const indexSearch = function (table, where, index, keys) {
 
 module.exports = {
 	name: "SELECT",
-	execute(params) {
-		params = validateSelectParams(params);
-
-		if (params.err) {
-			return params.err;
-		}
-
-		let { columns, table, where } = params;
-
-		let keys = buildKeysArray(columns);
-
-		if (keys.length === 0 || where.length > 1) {
-			return fullTableSearch(table, keys, where);
-		}
-
-		let index = getAppropriateIndex(table, keys, where);
-
-		if (index !== undefined) {
-			return indexSearch(table, where, index, keys);
-		}
-
-		return fullTableSearch(table, keys, where);
-	},
+	execute: executeSelect,
 };

@@ -6,49 +6,71 @@ let {
 	setTable,
 } = require("../database");
 
-module.exports = {
-	name: "CREATE TABLE",
-	execute(params) {
-		let { columns, table } = params;
-		let database = getDatabase();
+const executeCreateTable = function (params) {
+	let { columns, table } = params;
 
-		if (Array.isArray(columns[0])) {
-			columns = columns[0];
-		}
-
-		if (columns === undefined || columns.length === 0) {
-			return "ERROR: table columns can't be empty.";
-		}
-
-		if (table === "name") {
-			return "ERROR: you can't create a table with name 'name', its a reserved word.";
-		}
-
-		columns = columns.map((key) => {
-			if (typeof key === "string") {
-				return {
-					name: key,
-					nullable: false,
-				};
-			}
-
-			return key;
-		});
-
-		database.tables = [
-			...database.tables,
-			{
-				name: table,
-				keys: columns,
-				indexes: [],
-			},
-		];
-
-		setTable(table, []);
-		saveTable(table, []);
-		setDatabase(database);
-		saveDatabase(database);
+	try {
+		createTable(columns, table);
 
 		return `Table ${table} created`;
-	},
+	} catch (error) {
+		return error;
+	}
+};
+
+const createTable = function (columns, table) {
+	const database = getDatabase();
+
+	if (table === "name") {
+		throw "ERROR: you can't create a table with name 'name', its a reserved word.";
+	}
+
+	const columnsArray = createColumnsArray(columns);
+
+	saveTableToDisk(table);
+
+	saveDatabaseToDisk(database, table, columnsArray);
+};
+
+const saveDatabaseToDisk = function (database, table, columns) {
+	database.tables = [
+		...database.tables,
+		{
+			name: table,
+			keys: columns,
+			indexes: [],
+		},
+	];
+
+	setDatabase(database);
+	saveDatabase(database);
+};
+
+const saveTableToDisk = function (table) {
+	setTable(table, []);
+	saveTable(table, []);
+};
+
+const createColumnsArray = function (columns) {
+	if (Array.isArray(columns[0])) {
+		columns = columns[0];
+	}
+
+	columns.map((key) => {
+		if (typeof key === "string") {
+			return {
+				name: key,
+				nullable: false,
+			};
+		}
+
+		return key;
+	});
+
+	return columns;
+};
+
+module.exports = {
+	name: "CREATE TABLE",
+	execute: executeCreateTable,
 };

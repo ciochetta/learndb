@@ -49,7 +49,7 @@ const buildWhere = function (whereObj) {
 		return (x) => x[key].toString().includes(value);
 	}
 
-	console.log(`ERR: operator ${operator} not found`);
+	throw `ERR: operator ${operator} not found`;
 };
 
 module.exports = { buildWhere };

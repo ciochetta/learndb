@@ -17,7 +17,7 @@ const getDatabaseName = function () {
 
 const saveDatabase = function (_database) {
 	if (_database.name === undefined) {
-		return console.error("ERROR: database is not initialized");
+		throw "ERROR: database is not initialized";
 	}
 
 	const databasePath = `./${_database.name}.ldb`;
@@ -45,22 +45,38 @@ const getTable = function (tableName) {
 
 		return tableJson;
 	} else {
-		return {
-			err: `ERROR: could not find a table with name ${tableName}`,
-		};
+		throw `ERROR: could not find a table with name ${tableName}`;
 	}
 };
 
 const saveTable = function (tableName, tableData) {
+	if (tableName === undefined || tableName === undefined) {
+		throw "ERROR: table name cannot be undefined";
+	}
+
+	if (tableData === undefined || tableData === undefined) {
+		throw "ERROR: table name cannot be undefined";
+	}
+
+	if (database.name === undefined) {
+		throw "ERROR: database is not initialized";
+	}
+
 	const tablePath = `./${database.name}_${tableName}.ldbt`;
 
 	fs.writeFileSync(tablePath, JSON.stringify(tableData));
 };
 
 const getTableMetadata = function (tableName) {
-	return database.tables.find(
+	let metadata = database.tables.find(
 		(table) => table.name.toLowerCase() === tableName.toLowerCase()
 	);
+
+	if (metadata === undefined) {
+		throw `ERROR: could not find table with name ${tableName}`;
+	}
+
+	return metadata;
 };
 
 const setTableMetadata = function (tableName, tableMetadata) {

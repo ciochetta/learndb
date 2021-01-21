@@ -5,47 +5,61 @@ let {
 	saveTable,
 } = require("../database");
 
-module.exports = {
-	name: "BULK INSERT",
-	execute(params) {
-		const { documents, table } = params;
+const executeBulkInsert = function (params) {
+	const { documents, table } = params;
 
-		let tableMetadata = getTableMetadata(table);
+	try {
+		bulkInsert(documents, table);
+		return "Objects inserted with success";
+	} catch (error) {
+		return error;
+	}
+};
 
-		let tableRows = getTable(table);
+const bulkInsert = function (documents, table) {
+	const tableMetadata = getTableMetadata(table);
 
-		if (tableRows.err) {
-			return tableRows.err;
-		}
+	const tableRows = getTable(table);
 
-		insertDocuments = [];
-		const keys = tableMetadata.keys;
+	const insertDocuments = createInsertDocuments(tableMetadata.keys, documents);
 
-		documents.forEach((document) => {
-			let insertObj = {};
+	newTableRows = [...tableRows, ...insertDocuments];
 
-			for (let i = 0; i < keys.length; i++) {
-				const key = keys[i];
+	saveTableToDisk(table, newTableRows);
+};
 
-				if (
-					!key.nullable &&
-					(document[i] === undefined || document[i] === null) &&
-					(document[key.name] === undefined || document[key.name] === null)
-				) {
-					return `ERROR: ${key.name} can not be empty`;
-				}
+const saveTableToDisk = function (table, tableRows) {
+	setTable(table, newTableRows);
+	saveTable(table, newTableRows);
+};
 
-				insertObj[key.name] = document[i] || document[key.name];
+const createInsertDocuments = function (keys, documents) {
+	insertDocuments = [];
+
+	documents.forEach((document) => {
+		let insertObj = {};
+
+		for (let i = 0; i < keys.length; i++) {
+			const key = keys[i];
+
+			if (
+				!key.nullable &&
+				(document[i] === undefined || document[i] === null) &&
+				(document[key.name] === undefined || document[key.name] === null)
+			) {
+				throw `ERROR: ${key.name} can not be empty`;
 			}
 
-			insertDocuments.push(insertObj);
-		});
+			insertObj[key.name] = document[i] || document[key.name];
+		}
 
-		tableRows = [...tableRows, ...insertDocuments];
+		insertDocuments.push(insertObj);
+	});
 
-		setTable(table, tableRows);
-		saveTable(table, tableRows);
+	return insertDocuments;
+};
 
-		return "Objects inserted with success";
-	},
+module.exports = {
+	name: "BULK INSERT",
+	execute: executeBulkInsert,
 };
